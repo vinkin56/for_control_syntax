@@ -1,0 +1,30 @@
+---
+- name: Add user and insert ssh key
+  hosts: myserver
+  gather_fact: yes
+  become: yes
+
+  tasks:
+  - name: Add user
+    user:
+        name: pechora
+        password: !
+        groups: wheel
+        append: yes
+  
+  - name: Generate key
+    user:
+         name: pechora
+         generate_ssh_key: yes
+         ssh_key_bits: 2048
+         ssh_key_file: .ssh/pechora
+ 
+  - name: insert authorized key
+    ansible.posix.authorized_key:
+      user: pechora
+      key: "{{ lookup('file', '/home/pechora/.ssh/pechora.pub') }}"
+
+   - name: Get key to local
+     fetch:
+       src: /home/pechora/.ssh/pechora
+       dest: /tmp/
